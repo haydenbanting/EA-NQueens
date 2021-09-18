@@ -143,7 +143,7 @@ if plots:
     plt.yticks(fontsize=12)
     plt.ylabel('Population Average Fitness', fontsize=14)
     plt.xlabel('Generation', fontsize=14)
-    plt.savefig('output/fitness_vs_generation.png', bbox_inches='tight', pad_inches=0, dpi=800)
+    plt.savefig('output/fitness_vs_generation.png', bbox_inches='tight', pad_inches=0)
 
     # Showing best solution on a grid
     plt.figure(2)
@@ -154,7 +154,7 @@ if plots:
     ax.set_xticks(np.arange(-0.5, grid_size, 1), minor=True)
     ax.set_yticks(np.arange(-0.5, grid_size, 1), minor=True)
     ax.grid(which='minor', color='k', linestyle='-', linewidth=2)
-    plt.savefig('output/solution.png', bbox_inches='tight', pad_inches=0, dpi=800)
+    plt.savefig('output/solution.png', bbox_inches='tight', pad_inches=0)
 
     # Show all
     plt.show()

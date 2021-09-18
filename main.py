@@ -12,8 +12,8 @@ from population import mutation
 #----------------------------------------------------------------------------------------------------------------------#
 grid_size = 8
 pop_size = 500
-num_parents = 10
-num_offspring = 5
+num_parents = 20
+num_offspring = 10
 mutation_rate = 0.2
 cross_over_rate = 1.0
 max_generations = 5000
@@ -132,13 +132,29 @@ while (generation < max_generations) and (best_fitness > 0):
 #------------------------------------------------------------------------------------------------------------------#
 # Optional plots
 #------------------------------------------------------------------------------------------------------------------#
+
+
 if plots:
+    
+    # Showing average fitness over generations
     plt.figure(1)
     plt.plot([i for i in range(generation)], pop_ave_fitness, color='b', linestyle='-', linewidth=2)
     plt.xticks(fontsize=12)
     plt.yticks(fontsize=12)
     plt.ylabel('Population Average Fitness', fontsize=14)
     plt.xlabel('Generation', fontsize=14)
+
+    # Showing best solution on a grid
+    plt.figure(2)
+    grid = np.zeros((grid_size, grid_size))
+    for i in range(grid_size): grid[population[0].genotype[i], i] = 1
+    plt.imshow(grid)
+    ax = plt.gca()
+    ax.set_xticks(np.arange(-0.5, grid_size, 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, grid_size, 1), minor=True)
+    ax.grid(which='minor', color='k', linestyle='-', linewidth=2)
+
+    # Show all
     plt.show()
     
 

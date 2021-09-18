@@ -13,5 +13,10 @@ mutation_rate - chance of mutation per generation per offsrping <br/>
 max_generations - stop after this number of generations if no solution is found <br/>
   
 Also some options to see various prints and plots about the process.
-  
+
+Example solution:
+
+[2, 4, 1, 7, 5, 3, 6, 0]
+
+
   

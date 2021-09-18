@@ -16,7 +16,11 @@ Also some options to see various prints and plots about the process.
 
 Example solution:
 
-[2, 4, 1, 7, 5, 3, 6, 0]
+[3 5 7 2 0 6 4 1]
+
+<img src="https://github.com/haydenbanting/ea-8queens/blob/main/output/solution.png" width="400" height="400">
+
+
 
 
   

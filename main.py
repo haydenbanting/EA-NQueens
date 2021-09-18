@@ -13,7 +13,7 @@ from population import mutation
 grid_size = 8
 pop_size = 500
 num_parents = 10
-num_offspring = 4
+num_offspring = 5
 mutation_rate = 0.2
 cross_over_rate = 1.0
 max_generations = 5000
@@ -26,14 +26,14 @@ plots = True
 assert(num_parents >= num_offspring)
 
 
-
 #----------------------------------------------------------------------------------------------------------------------#
 # Initialize population
 #----------------------------------------------------------------------------------------------------------------------#
-population = []
-for i in range(pop_size):
-    population.append( phenotype.Phenotype( np.random.randint(8, size=8) ) )
-    #population.append( phenotype.Phenotype( np.random.permutation( np.arange(grid_size) ) ) )
+# Random initialization
+population = [phenotype.Phenotype(np.random.randint(grid_size, size=grid_size)) for i in range(pop_size)]
+
+# Improved initialization - no row conflicts
+#population = [phenotype.Phenotype(np.random.permutation(np.arange(grid_size))) for i in range(pop_size)]
 
 # Pre-sort population for faster processing in EA
 population.sort(key=lambda x: x.fitness)
@@ -41,7 +41,6 @@ population.sort(key=lambda x: x.fitness)
 #----------------------------------------------------------------------------------------------------------------------#
 # Evolutionary algorithm
 #----------------------------------------------------------------------------------------------------------------------#
-
 generation = 0
 best_fitness = population[0].fitness
 pop_ave_fitness = []
@@ -50,14 +49,12 @@ pop_ave_fitness = []
 while (generation < max_generations) and (best_fitness > 0):
 
     generation += 1
-    #parent_candidates = []
-    
+
     #------------------------------------------------------------------------------------------------------------------#
     # Parent Selection
     #------------------------------------------------------------------------------------------------------------------#
-
     # Pick candidate parents
-    parent_cand_idxs = np.random.randint(pop_size, size=5)
+    parent_cand_idxs = np.random.randint(pop_size, size=num_parents)
     parent_candidates = [population[i] for i in parent_cand_idxs]
 
     # Sort the candidates by fitness
@@ -81,7 +78,6 @@ while (generation < max_generations) and (best_fitness > 0):
     #------------------------------------------------------------------------------------------------------------------#
     # Mutation
     #------------------------------------------------------------------------------------------------------------------#
-
     # Loop over each offspring
     for i in range(len(offspring)):
 
@@ -93,19 +89,17 @@ while (generation < max_generations) and (best_fitness > 0):
     #------------------------------------------------------------------------------------------------------------------#
     # Update population
     #------------------------------------------------------------------------------------------------------------------#
-
-    # Add offspring to population
+    # Add each offspring into population
     for i in range(len(offspring)):
 
         # Insert them into sorted population
         for j in range(len(population)):
-            #print(j)
             if (offspring[i].fitness < population[j].fitness):
                 population.insert(j, offspring[i]) 
                 break
-            elif (j == len(population) - 1): # edge
+            elif (j == len(population) - 1): # edge case (new best)
                 population.insert(j, offspring[i])
-            #elif (j == len(o))
+
     
     # Remove worst candidates in population
     population = population[:len(population) - len(offspring)]
@@ -116,7 +110,6 @@ while (generation < max_generations) and (best_fitness > 0):
     #------------------------------------------------------------------------------------------------------------------#
     # Population evaluation
     #------------------------------------------------------------------------------------------------------------------#
-    
     # Compute average fitness of the population
     s = 0
     for i in range(len(population)): s += population[i].fitness
@@ -130,8 +123,11 @@ while (generation < max_generations) and (best_fitness > 0):
     # Optional prints about generation
     #------------------------------------------------------------------------------------------------------------------#
     if prints:
-        print('Generation: {:4d} Population Size: {:3d} Average Fitness: {:.2f} Best Phenotype: {} Fitness: {}'.format(generation, len(population), ave, population[0].genotype, population[0].fitness))
-    
+        print('Generation: {:4d} Population Size: {:3d} '.format(generation, len(population)) +
+              'Average Fitness: {:.2f} Best Phenotype: {} Fitness: {}'.format(ave, 
+                                                                              population[0].genotype, 
+                                                                              population[0].fitness))
+        
 
 #------------------------------------------------------------------------------------------------------------------#
 # Optional plots

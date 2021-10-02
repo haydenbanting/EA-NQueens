@@ -11,11 +11,11 @@ from population import selection
 #----------------------------------------------------------------------------------------------------------------------#
 # Parameters
 #----------------------------------------------------------------------------------------------------------------------#
-grid_size = 12              
+grid_size = 16              
 pop_size = 100            
-selection_size = 100         
+selection_size = 40         
 num_parents = 20          
-num_offspring = 10          
+num_offspring = 20          
 mutation_rate = 0.3         
 cross_over_rate = 1    
 max_generations = 5000     
@@ -30,14 +30,11 @@ assert(num_parents >= num_offspring)
 assert(num_parents % 2 == 0)            
 assert(num_offspring % 2 == 0)
 
-
 #----------------------------------------------------------------------------------------------------------------------#
 # Initialize population
 #----------------------------------------------------------------------------------------------------------------------#
-# Random initialization
-#population = [phenotype.Phenotype(np.random.randint(grid_size, size=grid_size)) for i in range(pop_size)]
 
-# Improved initialization
+# Random permutation initialization
 population = [phenotype.Phenotype(np.random.permutation(np.arange(grid_size))) for i in range(pop_size)]
 
 # Pre-sort population for faster processing in EA
@@ -67,16 +64,17 @@ while (generation < max_generations) and (best_fitness > 0):
     # Crossover 
     #------------------------------------------------------------------------------------------------------------------#
     
-    # Simple Crossover
     offspring = []
 
     # Loop over all parent pairs
     for i in range(len(pairs)):
 
-        # Check if cross-over will occur for this pair    
+        # Check if crossover will occur for this pair    
         if (np.random.uniform(0, 1) <= cross_over_rate): 
-            offspring += crossover.crossover(pairs[i][0], pairs[i][1], grid_size)
-            #crossover.inversion(pairs[i][0])
+            
+            # partially-mapped crossover
+            offspring += crossover.pmx(pairs[i][0], pairs[i][1])
+            offspring += crossover.pmx(pairs[i][1], pairs[i][0])
 
         # If no crossover, just use these parents as offspring 
         else:
@@ -86,24 +84,6 @@ while (generation < max_generations) and (best_fitness > 0):
     offspring = [offspring[i] for i in range(num_offspring)]
 
     
-    # Inversion crossover - problems
-    '''
-    offspring = []
-    for i in range(num_offspring):
-
-        # select random parent
-        idx = np.random.randint(len(parents))
-        #parent = parents.pop(idx)
-        parent = parents[idx]
-
-        # Check if cross-over will occur for this pair    
-        if (np.random.uniform(0, 1) <= cross_over_rate): 
-            offspring += crossover.inversion(parent)
-
-        # If no crossover, just use these parents as offspring 
-        else:
-            offspring += [parent]
-        '''
     #------------------------------------------------------------------------------------------------------------------#
     # Mutation
     #------------------------------------------------------------------------------------------------------------------#
@@ -112,7 +92,9 @@ while (generation < max_generations) and (best_fitness > 0):
 
         # Check if mutation will occur
         if (np.random.uniform(0, 1) <= mutation_rate): 
-            offspring[i] = mutation.mutate(offspring[i], grid_size)
+
+            # inversion mutation
+            offspring[i] = mutation.inversion(offspring[i])
 
 
     #------------------------------------------------------------------------------------------------------------------#

@@ -11,5 +11,8 @@ def mutate(offspring, grid_size):
     genotype = offspring.genotype
     genotype[swap1],  genotype[swap2] = genotype[swap2], genotype[swap1]
 
+    # New offspring
+    offspring = phenotype.Phenotype(genotype)
+
     # Return new mutated offspring to replace 
-    return phenotype.Phenotype(genotype)
+    return offspring

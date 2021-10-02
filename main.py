@@ -6,34 +6,39 @@ import matplotlib.pyplot as plt
 from population import phenotype
 from population import crossover
 from population import mutation
+from population import selection
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Parameters
 #----------------------------------------------------------------------------------------------------------------------#
-grid_size = 8
-pop_size = 500
-num_parents = 20
-num_offspring = 10
-mutation_rate = 0.2
-cross_over_rate = 1.0
-max_generations = 5000
+grid_size = 12              
+pop_size = 100            
+selection_size = 100         
+num_parents = 20          
+num_offspring = 10          
+mutation_rate = 0.3         
+cross_over_rate = 1    
+max_generations = 5000     
 prints = True
 plots = True
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Parameter sanity check
 #----------------------------------------------------------------------------------------------------------------------#
-assert(num_parents >= num_offspring)
+assert(pop_size > num_parents)
+assert(num_parents >= num_offspring)  
+assert(num_parents % 2 == 0)            
+assert(num_offspring % 2 == 0)
 
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Initialize population
 #----------------------------------------------------------------------------------------------------------------------#
 # Random initialization
-population = [phenotype.Phenotype(np.random.randint(grid_size, size=grid_size)) for i in range(pop_size)]
+#population = [phenotype.Phenotype(np.random.randint(grid_size, size=grid_size)) for i in range(pop_size)]
 
-# Improved initialization - no row conflicts
-#population = [phenotype.Phenotype(np.random.permutation(np.arange(grid_size))) for i in range(pop_size)]
+# Improved initialization
+population = [phenotype.Phenotype(np.random.permutation(np.arange(grid_size))) for i in range(pop_size)]
 
 # Pre-sort population for faster processing in EA
 population.sort(key=lambda x: x.fitness)
@@ -53,28 +58,52 @@ while (generation < max_generations) and (best_fitness > 0):
     #------------------------------------------------------------------------------------------------------------------#
     # Parent Selection
     #------------------------------------------------------------------------------------------------------------------#
-    # Pick candidate parents
-    parent_cand_idxs = np.random.randint(pop_size, size=num_parents)
-    parent_candidates = [population[i] for i in parent_cand_idxs]
+    parents = selection.fitness_prop_selection(population, num_parents)
 
-    # Sort the candidates by fitness
-    parent_candidates.sort(key=lambda x: x.fitness)
-
-    # Keep only best parents
-    parents = [parent_candidates[i] for i in range(num_offspring)]
-
+    # Randomly assign pairs of parents
+    pairs = selection.random_parent_pairs(parents)
+    
     #------------------------------------------------------------------------------------------------------------------#
     # Crossover 
     #------------------------------------------------------------------------------------------------------------------#
+    
+    # Simple Crossover
     offspring = []
-    # Loop over all parent pairs
-    for i in range(len(parents)-1):
-        for j in range(i+1, len(parents)):
-            
-            # Check if cross-over will occur for this pair    
-            if (np.random.uniform(0, 1) <= cross_over_rate): 
-                offspring += crossover.crossover(parents[i], parents[j], grid_size) 
 
+    # Loop over all parent pairs
+    for i in range(len(pairs)):
+
+        # Check if cross-over will occur for this pair    
+        if (np.random.uniform(0, 1) <= cross_over_rate): 
+            offspring += crossover.crossover(pairs[i][0], pairs[i][1], grid_size)
+            #crossover.inversion(pairs[i][0])
+
+        # If no crossover, just use these parents as offspring 
+        else:
+            offspring += [pairs[i][0], pairs[i][1]]
+
+    # Keep only num_offspring
+    offspring = [offspring[i] for i in range(num_offspring)]
+
+    
+    # Inversion crossover - problems
+    '''
+    offspring = []
+    for i in range(num_offspring):
+
+        # select random parent
+        idx = np.random.randint(len(parents))
+        #parent = parents.pop(idx)
+        parent = parents[idx]
+
+        # Check if cross-over will occur for this pair    
+        if (np.random.uniform(0, 1) <= cross_over_rate): 
+            offspring += crossover.inversion(parent)
+
+        # If no crossover, just use these parents as offspring 
+        else:
+            offspring += [parent]
+        '''
     #------------------------------------------------------------------------------------------------------------------#
     # Mutation
     #------------------------------------------------------------------------------------------------------------------#
@@ -89,6 +118,11 @@ while (generation < max_generations) and (best_fitness > 0):
     #------------------------------------------------------------------------------------------------------------------#
     # Update population
     #------------------------------------------------------------------------------------------------------------------#
+    population += offspring
+    population.sort(key=lambda x: x.fitness)
+    population = population[:len(population) - len(offspring)]
+    assert(len(population) == pop_size)
+    '''
     # Add each offspring into population
     for i in range(len(offspring)):
 
@@ -106,7 +140,7 @@ while (generation < max_generations) and (best_fitness > 0):
 
     # Keeping population size contant each generation
     assert(len(population) == pop_size)
-
+    '''
     #------------------------------------------------------------------------------------------------------------------#
     # Population evaluation
     #------------------------------------------------------------------------------------------------------------------#

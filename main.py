@@ -7,16 +7,17 @@ from population import phenotype
 from population import crossover
 from population import mutation
 from population import selection
+from population import survival
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Parameters
 #----------------------------------------------------------------------------------------------------------------------#
 grid_size = 16              
-pop_size = 100            
-selection_size = 40         
-num_parents = 20          
-num_offspring = 20          
-mutation_rate = 0.3         
+pop_size = 250            
+selection_size = 50         
+num_parents = 100          
+num_offspring = 100          
+mutation_rate = 0.4         
 cross_over_rate = 1    
 max_generations = 5000     
 prints = True
@@ -38,23 +39,26 @@ assert(num_offspring % 2 == 0)
 population = [phenotype.Phenotype(np.random.permutation(np.arange(grid_size))) for i in range(pop_size)]
 
 # Pre-sort population for faster processing in EA
-population.sort(key=lambda x: x.fitness)
+population.sort(key=lambda x: x.fitness, reverse=True)
 
 #----------------------------------------------------------------------------------------------------------------------#
 # Evolutionary algorithm
 #----------------------------------------------------------------------------------------------------------------------#
 generation = 0
 best_fitness = population[0].fitness
+solution = population[0].errors
 pop_ave_fitness = []
 
 # Loop until solution is found or after a certain number of iterations
-while (generation < max_generations) and (best_fitness > 0):
+while (generation < max_generations) and (solution > 0):
 
     generation += 1
 
     #------------------------------------------------------------------------------------------------------------------#
     # Parent Selection
     #------------------------------------------------------------------------------------------------------------------#
+    
+    # Uniform parent selection
     parents = selection.fitness_prop_selection(population, num_parents)
 
     # Randomly assign pairs of parents
@@ -98,34 +102,19 @@ while (generation < max_generations) and (best_fitness > 0):
 
 
     #------------------------------------------------------------------------------------------------------------------#
-    # Update population
+    # Survival
     #------------------------------------------------------------------------------------------------------------------#
-    population += offspring
-    population.sort(key=lambda x: x.fitness)
-    population = population[:len(population) - len(offspring)]
-    assert(len(population) == pop_size)
-    '''
-    # Add each offspring into population
-    for i in range(len(offspring)):
 
-        # Insert them into sorted population
-        for j in range(len(population)):
-            if (offspring[i].fitness < population[j].fitness):
-                population.insert(j, offspring[i]) 
-                break
-            elif (j == len(population) - 1): # edge case (new best)
-                population.insert(j, offspring[i])
+    # Increase age of all individuals in current generation
+    for i in range(pop_size): population[i].increment_age() 
 
-    
-    # Remove worst candidates in population
-    population = population[:len(population) - len(offspring)]
+    # Replacement survival
+    population = survival.replacement(population, offspring)
 
-    # Keeping population size contant each generation
-    assert(len(population) == pop_size)
-    '''
     #------------------------------------------------------------------------------------------------------------------#
     # Population evaluation
     #------------------------------------------------------------------------------------------------------------------#
+
     # Compute average fitness of the population
     s = 0
     for i in range(len(population)): s += population[i].fitness
@@ -135,14 +124,19 @@ while (generation < max_generations) and (best_fitness > 0):
     # Get new best fitness
     best_fitness = population[0].fitness
 
+    # Check if solution found
+    solution = population[0].errors
+
     #------------------------------------------------------------------------------------------------------------------#
     # Optional prints about generation
     #------------------------------------------------------------------------------------------------------------------#
     if prints:
         print('Generation: {:4d} Population Size: {:3d} '.format(generation, len(population)) +
-              'Average Fitness: {:.2f} Best Phenotype: {} Fitness: {}'.format(ave, 
+              'Average Fitness: {:.3f} Best Phenotype: {} Age: {:3d} Fitness: {:.3f} Errors: {:2d}'.format(ave, 
                                                                               population[0].genotype, 
-                                                                              population[0].fitness))
+                                                                              population[0].age,
+                                                                              population[0].fitness,
+                                                                              population[0].errors))
         
 
 #------------------------------------------------------------------------------------------------------------------#

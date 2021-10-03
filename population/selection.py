@@ -12,7 +12,7 @@ def tournament(population, n, k):
     parent_candidates = [population[i] for i in parent_cand_idxs]
 
     # Sort the candidates by fitness
-    parent_candidates.sort(key=lambda x: x.fitness)
+    parent_candidates.sort(key=lambda x: x.fitness, reverse=True)
 
     # Keep only best parents
     parents = [parent_candidates[i] for i in range(n)]
@@ -22,10 +22,13 @@ def tournament(population, n, k):
 
 def fitness_prop_selection(population, n):
 
+    # To-Do: Add rank compute here, change phenotype fitness from relative to max errors to relative to pop ave
+
     # Compute probability to be selected
     p_fps = np.array([])
     total_f = 0
     for i in range(len(population)):
+        # Invert 
         p_fps = np.append(p_fps, population[i].fitness)
         total_f += population[i].fitness
     p_fps = p_fps / total_f
@@ -40,6 +43,16 @@ def fitness_prop_selection(population, n):
             idx += 1
             ai += p_fps[idx]
         parents.append(population[idx])
+
+    return parents
+
+def uniform(population, n):
+
+    # Randomly pick out indexes from population with equal chance    
+    idxs = np.random.randint(len(population), size=n)
+
+    # Keep only best parents
+    parents = [population[i] for i in range(n)]
 
     return parents
 
